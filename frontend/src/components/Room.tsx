@@ -9,6 +9,7 @@ const Room: React.FC = () => {
   const { id, user } = useParams();
   const navigate = useNavigate();
   const [session, setSession] = useState<any>(null);
+  const [code, setCode] = useState("");
 
   const handleClick = () => {
     const handleQuit = async () => {
@@ -26,18 +27,16 @@ const Room: React.FC = () => {
     const loadSession = async () => {
       const sess: Session = await getSession(id);
       setSession(sess);
+      if (code !== sess.code) setCode(sess.code);
+      if (sess) {
+        const currentDate: Date = new Date();
+        const startDate: Date = new Date(sess.time);
+        const milliDiff: number = currentDate.getTime() - startDate.getTime();
+        setExpired(milliDiff > TIME_LIMIT);
+      }
     };
     loadSession();
   });
-
-  useEffect(() => {
-    if (session) {
-      const currentDate: Date = new Date();
-      const startDate: Date = new Date(session.time);
-      const milliDiff: number = currentDate.getTime() - startDate.getTime();
-      setExpired(milliDiff > TIME_LIMIT);
-    }
-  }, [session]);
 
   const handleChange = (value: string) => {
     let newSession: Session = { ...session };
@@ -55,7 +54,7 @@ const Room: React.FC = () => {
       ) : (
         <div>
           <CodeEditor
-            value={session?.code}
+            value={code}
             language="js"
             placeholder="Please enter JS code."
             onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
